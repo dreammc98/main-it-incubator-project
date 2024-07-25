@@ -1,6 +1,8 @@
 import { FilterValueType, TasksType } from "../../App";
+import { AddItemForm } from "../AddItemForm";
 import { Button } from "../Button";
 import { ChangeEvent, MouseEventHandler, useState } from "react";
+import { EditableSpan } from "../EditableSpan";
 
 type TodolistPropsType = {
   title?: string;
@@ -11,8 +13,10 @@ type TodolistPropsType = {
   removeTask: (id: string, todolistId: string) => void;
   changeFilter: (filter: FilterValueType, id: string) => void;
   changeTaskStatus: (isDone: boolean, id: string, todolistId: string) => void;
+  changeTodolistTitle: (todolistId: string, title: string) => void;
   todolistId: string;
   removeTodolist: (todolistId: string) => void;
+  changeTaskTitle: (todolistId: string, taskId: string, newTitle: string) => void;
 };
 
 export function Todolist(props: TodolistPropsType) {
@@ -27,21 +31,12 @@ export function Todolist(props: TodolistPropsType) {
     changeTaskStatus,
     todolistId,
     removeTodolist,
+    changeTaskTitle,
+    changeTodolistTitle,
   } = props;
 
   const removeTodolistHandler = () => {
     removeTodolist(todolistId);
-  };
-
-  const [taskTitle, setTaskTitle] = useState("");
-
-  const [error, setError] = useState<null | string>(null);
-
-  const stringLengthInput = 15;
-
-  const changeTaskTitleHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    setError(null);
-    setTaskTitle(event.currentTarget.value);
   };
 
   const changeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>, id: string) => {
@@ -49,50 +44,32 @@ export function Todolist(props: TodolistPropsType) {
     changeTaskStatus(newStatusValue, id, todolistId);
   };
 
-  const addTaskHandler = () => {
-    if (taskTitle.trim() !== "") {
-      addTask(taskTitle.trim(), todolistId);
-    } else {
-      setError("Title is required");
-    }
-
-    setTaskTitle("");
-  };
-
-  const addTaskOnKeyHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      addTaskHandler();
-    }
-    return;
-  };
-
   const getActiveFilter = (prop: string) => {
     return filter === prop ? "active-filter" : "";
   };
 
-  const isAddTaskButtonDisabled = taskTitle.length > stringLengthInput || !taskTitle;
+  const addTaskHandler = (title: string) => {
+    addTask(title, todolistId);
+  };
 
-  const userTaskTitleLengthWarning = taskTitle.length > stringLengthInput && (
-    <div>Maximum length {stringLengthInput} characters</div>
-  );
+  const changeTaskTitleHandler = (taskId: string, newTitle: string) => {
+    changeTaskTitle(todolistId, taskId, newTitle);
+  };
+
+  const changeTodolistTitleHandler = (title: string) => {
+    changeTodolistTitle(todolistId, title);
+  };
 
   return (
     <div>
       <div className="todolist-title-container">
-        <h3>{title}</h3>
+        {/* <h3>{title}</h3> */}
+        <EditableSpan oldTitle={title} changeTitleHandler={changeTodolistTitleHandler} />
         <Button title={"x"} onClick={removeTodolistHandler} />
       </div>
 
       <div>
-        <input
-          className={error ? "error" : ""}
-          value={taskTitle}
-          onChange={(event) => changeTaskTitleHandler(event)}
-          onKeyUp={(event) => addTaskOnKeyHandler(event)}
-        />
-        <Button title="+" onClick={addTaskHandler} disabled={isAddTaskButtonDisabled} />
-        {error && <div className="error-message">{error}</div>}
-        {userTaskTitleLengthWarning}
+        <AddItemForm addItem={addTaskHandler} />
       </div>
       {tasks.length > 0 ? (
         <ul>
@@ -104,7 +81,10 @@ export function Todolist(props: TodolistPropsType) {
                   checked={task.isDone}
                   onChange={(e) => changeTaskStatusHandler(e, task.id)}
                 />
-                <span>{task.title}</span>
+                <EditableSpan
+                  oldTitle={task.title}
+                  changeTitleHandler={(newTitle) => changeTaskTitleHandler(task.id, newTitle)}
+                />
                 <Button onClick={() => removeTask(task.id, todolistId)} title="x" />
               </li>
             );
