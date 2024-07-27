@@ -3,7 +3,8 @@ import "./App.css";
 import { Todolist } from "./components/Todolist/Todolist";
 import { v1 } from "uuid";
 import { AddItemForm } from "./components/AddItemForm";
-import { Button } from "./components/Button";
+import { Header } from "./components/Header";
+import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
 
 export type TasksType = {
   id: string;
@@ -94,41 +95,56 @@ function App() {
     setTodolists(todolists.map((tl) => (tl.id === todolistId ? { ...tl, filter } : tl)));
   };
 
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: "#efc600",
+      },
+    },
+  });
+
   return (
     <div className="App">
-      <div>
-        <AddItemForm addItem={addTodolist} />
-      </div>
-      {todolists.map((todolist) => {
-        const allTodolistTasks = tasks[todolist.id];
-        let tasksForTodolist = allTodolistTasks;
+      <ThemeProvider theme={theme}>
+        <Header />
+        <div className="wrapper">
+          <div>
+            <AddItemForm addItem={addTodolist} />
+          </div>
+          <div className="todolist">
+            {todolists.map((todolist) => {
+              const allTodolistTasks = tasks[todolist.id];
+              let tasksForTodolist = allTodolistTasks;
 
-        if (todolist.filter === "active") {
-          tasksForTodolist = allTodolistTasks.filter((task) => !task.isDone);
-        }
+              if (todolist.filter === "active") {
+                tasksForTodolist = allTodolistTasks.filter((task) => !task.isDone);
+              }
 
-        if (todolist.filter === "completed") {
-          tasksForTodolist = allTodolistTasks.filter((task) => task.isDone);
-        }
+              if (todolist.filter === "completed") {
+                tasksForTodolist = allTodolistTasks.filter((task) => task.isDone);
+              }
 
-        return (
-          <Todolist
-            key={todolist.id}
-            title={todolist.title}
-            tasks={tasksForTodolist}
-            date="17.06.2024"
-            addTask={addTask}
-            removeTask={removeTask}
-            changeFilter={changeFilter}
-            changeTaskStatus={changeTaskStatus}
-            filter={todolist.filter}
-            todolistId={todolist.id}
-            removeTodolist={removeTodolist}
-            changeTaskTitle={changeTaskTitle}
-            changeTodolistTitle={changeTodolistTitle}
-          />
-        );
-      })}
+              return (
+                <Todolist
+                  key={todolist.id}
+                  title={todolist.title}
+                  tasks={tasksForTodolist}
+                  date="17.06.2024"
+                  addTask={addTask}
+                  removeTask={removeTask}
+                  changeFilter={changeFilter}
+                  changeTaskStatus={changeTaskStatus}
+                  filter={todolist.filter}
+                  todolistId={todolist.id}
+                  removeTodolist={removeTodolist}
+                  changeTaskTitle={changeTaskTitle}
+                  changeTodolistTitle={changeTodolistTitle}
+                />
+              );
+            })}
+          </div>
+        </div>
+      </ThemeProvider>
     </div>
   );
 }

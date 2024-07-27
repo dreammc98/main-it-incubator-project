@@ -1,5 +1,6 @@
-import { ChangeEvent, useState } from "react";
-import { Button } from "./Button";
+import { ChangeEvent, KeyboardEvent, useState } from "react";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
 type PropsType = {
   addItem: (title: string) => void;
@@ -11,22 +12,19 @@ export const AddItemForm = ({ addItem }: PropsType) => {
   const [error, setError] = useState<null | string>(null);
 
   const changeTaskTitleHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    setError(null);
     setTaskTitle(event.currentTarget.value);
   };
 
   const addTaskHandler = () => {
     if (taskTitle.trim() !== "") {
       addItem(taskTitle.trim());
-    } else {
-      setError("Title is required");
     }
 
     setTaskTitle("");
   };
 
-  const addTaskOnKeyHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" && taskTitle.length <= stringLengthInput) {
+  const addTaskOnKeyHandler = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && taskTitle.length <= stringLengthInput && taskTitle.length > 0) {
       addTaskHandler();
     }
     return;
@@ -40,18 +38,48 @@ export const AddItemForm = ({ addItem }: PropsType) => {
     <div>Maximum length {stringLengthInput} characters</div>
   );
 
+  if (taskTitle.length > stringLengthInput && !error) {
+    setError("Maximum length 15 characters");
+  }
+
+  if (taskTitle.length <= stringLengthInput && !!error) {
+    setError(null);
+  }
+
+  const buttonTypes = {
+    minWidth: "40px",
+    minHeight: "40px",
+    maxWidth: "40px",
+    maxHeight: "40px",
+  };
+
   return (
     <>
-      <input
+      <TextField
+        error={!!error}
+        id="outlined-basic"
+        label="Enter a title..."
+        variant="outlined"
         className={error ? "error" : ""}
         value={taskTitle}
-        onChange={(event) => changeTaskTitleHandler(event)}
-        onKeyUp={(event) => addTaskOnKeyHandler(event)}
+        onChange={changeTaskTitleHandler}
+        onKeyUp={addTaskOnKeyHandler}
+        size="small"
+        helperText={error}
       />
 
-      <Button title="+" onClick={addTaskHandler} disabled={isAddTaskButtonDisabled} />
+      <Button
+        onClick={addTaskHandler}
+        disabled={isAddTaskButtonDisabled}
+        variant="contained"
+        style={buttonTypes}
+      >
+        +
+      </Button>
+
+      {/* <Button   />
       {error && <div className="error-message">{error}</div>}
-      {userTaskTitleLengthWarning}
+      {userTaskTitleLengthWarning} */}
     </>
   );
 };
