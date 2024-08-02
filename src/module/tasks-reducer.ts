@@ -1,5 +1,6 @@
 import { v1 } from "uuid";
-import { TasksStateType } from "../App";
+import { TasksStateType, TasksType } from "../App";
+import { AddTodolistActionType, RemoveTodolistActionType } from "./todolists-reducer";
 
 export type RemoveTaskActionType = {
   type: "REMOVE-TASK";
@@ -26,22 +27,25 @@ export type ChangeTaskTitleActionType = {
   payload: { todolistId: string; taskId: string; newTitle: string };
 };
 
-type ActionsType =
+export type ActionsType =
   | RemoveTaskActionType
   | AddTaskActionType
   | DeleteAllTasksActionType
   | ChangeTaskStatusActionType
-  | ChangeTaskTitleActionType;
+  | ChangeTaskTitleActionType
+  | AddTodolistActionType
+  | RemoveTodolistActionType;
 
-export const tasksReducer = (state: TasksStateType, action: ActionsType): TasksStateType => {
+const initialState: TasksStateType = {};
+
+export const tasksReducer = (state = initialState, action: ActionsType): TasksStateType => {
   switch (action.type) {
     case "REMOVE-TASK": {
-      return {
-        ...state,
-        [action.payload.todolistId]: state[action.payload.todolistId].filter(
-          (t) => t.id !== action.payload.taskId
-        ),
-      };
+      const stateCopy = { ...state };
+      const tasks = stateCopy[action.payload.todolistId];
+      const newTasks = tasks.filter((t) => t.id != action.payload.taskId);
+      stateCopy[action.payload.todolistId] = newTasks;
+      return stateCopy;
     }
     case "DELETE-ALL-TASKS": {
       const copyState = { ...state };
@@ -49,18 +53,16 @@ export const tasksReducer = (state: TasksStateType, action: ActionsType): TasksS
       return copyState;
     }
     case "ADD-TASK": {
-      const newTask = { id: v1(), title: action.payload.title, isDone: false };
-      if (action.payload.title === "") {
-        return {
-          ...state,
-          [action.payload.todolistId]: [],
-        };
-      } else {
-        return {
-          ...state,
-          [action.payload.todolistId]: [...state[action.payload.todolistId], newTask],
-        };
-      }
+      const stateCopy = { ...state };
+      const newTask: TasksType = {
+        id: v1(),
+        title: action.payload.title,
+        isDone: false,
+      };
+      const tasks = stateCopy[action.payload.todolistId];
+      const newTasks = [newTask, ...tasks];
+      stateCopy[action.payload.todolistId] = newTasks;
+      return stateCopy;
     }
     case "CHANGE-TASK-STATUS": {
       return {
@@ -77,6 +79,17 @@ export const tasksReducer = (state: TasksStateType, action: ActionsType): TasksS
           t.id === action.payload.taskId ? { ...t, title: action.payload.newTitle } : t
         ),
       };
+    }
+    case "ADD-TODOLIST": {
+      return {
+        ...state,
+        [action.payload.newId]: [],
+      };
+    }
+    case "REMOVE-TODOLIST": {
+      const copyState = { ...state };
+      delete copyState[action.payload.id];
+      return copyState;
     }
     default:
       return state;
