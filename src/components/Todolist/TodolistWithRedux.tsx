@@ -1,13 +1,11 @@
-import { FilterValueType, TasksStateType, TasksType, TodolistType } from "../../App";
+import { FilterValueType, TasksType, TodolistType } from "../../App";
 import { AddItemForm } from "../AddItemForm";
-import Checkbox from "@mui/material/Checkbox";
-import { ChangeEvent, MouseEventHandler, useState } from "react";
+import { ChangeEvent, useMemo, useState, useCallback, memo } from "react";
 import { EditableSpan } from "../EditableSpan";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Button from "@mui/material/Button";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
 import Paper from "@mui/material/Paper";
 import { useSelector, useDispatch } from "react-redux";
 import { AppRootStateType } from "../../store/store";
@@ -22,12 +20,13 @@ import {
   changeTaskTitleAC,
   removeTaskAC,
 } from "../../module/tasks-reducer";
+import { Task } from "../Task";
 
 type TodolistPropsType = {
   todolist: TodolistType;
 };
 
-export function TodolistWithRedux({ todolist }: TodolistPropsType) {
+export const TodolistWithRedux = memo(({ todolist }: TodolistPropsType) => {
   const { id, filter, title } = todolist;
 
   let tasks = useSelector<AppRootStateType, TasksType[]>((state) => state.tasks[id]);
@@ -38,42 +37,57 @@ export function TodolistWithRedux({ todolist }: TodolistPropsType) {
     dispatch(removeTodolistAC(id));
   };
 
-  const removeTask = (taskId: string) => {
-    dispatch(removeTaskAC(taskId, id));
-  };
+  const removeTask = useCallback(
+    (taskId: string) => {
+      dispatch(removeTaskAC(taskId, id));
+    },
+    [dispatch]
+  );
 
-  const changeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>, taskId: string) => {
-    const taskStatus = e.currentTarget.checked;
-    dispatch(changeTaskStatusAC(taskStatus, taskId, id));
-  };
+  const changeTaskStatusHandler = useCallback(
+    (e: ChangeEvent<HTMLInputElement>, taskId: string) => {
+      const taskStatus = e.currentTarget.checked;
+      dispatch(changeTaskStatusAC(taskStatus, taskId, id));
+    },
+    [dispatch]
+  );
 
   const getActiveFilter = (prop: string) => {
     return filter === prop ? "active-filter" : "";
   };
 
-  const addTaskHandler = (title: string) => {
-    dispatch(addTaskAC(id, title));
-  };
+  const addTaskHandler = useCallback(
+    (title: string) => {
+      dispatch(addTaskAC(id, title));
+    },
+    [addTaskAC, id]
+  );
 
-  const changeTaskTitleHandler = (taskId: string, newTitle: string) => {
+  const changeTaskTitleHandler = useCallback((taskId: string, newTitle: string) => {
     dispatch(changeTaskTitleAC(id, taskId, newTitle));
-  };
+  }, []);
 
-  const changeTodolistTitleHandler = (title: string) => {
+  const changeTodolistTitleHandler = useCallback((title: string) => {
     dispatch(changeTodolistTitleAC(id, title));
-  };
+  }, []);
 
-  const changeFilter = (filter: FilterValueType) => {
-    dispatch(changeFilterAC(filter, id));
-  };
+  const changeFilter = useCallback(
+    (filter: FilterValueType) => {
+      dispatch(changeFilterAC(filter, id));
+    },
+    [filter, id]
+  );
 
-  if (filter === "active") {
-    tasks = tasks.filter((task) => !task.isDone);
-  }
+  tasks = useMemo(() => {
+    if (filter === "active") {
+      tasks = tasks.filter((task) => !task.isDone);
+    }
 
-  if (filter === "completed") {
-    tasks = tasks.filter((task) => task.isDone);
-  }
+    if (filter === "completed") {
+      tasks = tasks.filter((task) => task.isDone);
+    }
+    return tasks;
+  }, [tasks, filter]);
 
   type ButtonType = "contained" | "text" | "outlined";
 
@@ -99,20 +113,13 @@ export function TodolistWithRedux({ todolist }: TodolistPropsType) {
         <List>
           {tasks.map((task) => {
             return (
-              <ListItem key={task.id} className={task.isDone ? "is-done" : ""} sx={{ p: 0 }}>
-                <Checkbox
-                  checked={task.isDone}
-                  onChange={(e) => changeTaskStatusHandler(e, task.id)}
-                />
-
-                <EditableSpan
-                  oldTitle={task.title}
-                  changeTitleHandler={(newTitle) => changeTaskTitleHandler(task.id, newTitle)}
-                />
-                <IconButton aria-label="delete" onClick={() => removeTask(task.id)}>
-                  <DeleteIcon />
-                </IconButton>
-              </ListItem>
+              <Task
+                key={task.id}
+                task={task}
+                changeTaskStatusHandler={changeTaskStatusHandler}
+                changeTaskTitleHandler={changeTaskTitleHandler}
+                removeTask={removeTask}
+              />
             );
           })}
         </List>
@@ -149,4 +156,4 @@ export function TodolistWithRedux({ todolist }: TodolistPropsType) {
       {/* <div>{date}</div> */}
     </Paper>
   );
-}
+});

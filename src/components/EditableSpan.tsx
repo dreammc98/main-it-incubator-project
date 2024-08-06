@@ -1,4 +1,4 @@
-import { CSSProperties, ChangeEvent, useState } from "react";
+import { CSSProperties, ChangeEvent, useState, memo } from "react";
 import TextField from "@mui/material/TextField";
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
   style?: CSSProperties | undefined;
 };
 
-export const EditableSpan = ({ oldTitle, changeTitleHandler, style }: Props) => {
+export const EditableSpan = memo(({ oldTitle, changeTitleHandler, style }: Props) => {
   const [editMode, setEditMode] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string | undefined>(oldTitle);
 
@@ -55,4 +55,4 @@ export const EditableSpan = ({ oldTitle, changeTitleHandler, style }: Props) => 
       )}
     </>
   );
-};
+});

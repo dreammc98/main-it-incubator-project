@@ -8,6 +8,7 @@ import { addTodolistAC } from "./module/todolists-reducer";
 
 import { AppRootStateType } from "./store/store";
 import { useSelector, useDispatch } from "react-redux";
+import { useCallback } from "react";
 
 export type TasksType = {
   id: string;
@@ -31,10 +32,10 @@ function AppWithRedux() {
   const todolists = useSelector<AppRootStateType, TodolistType[]>((state) => state.todolists);
   const dispatch = useDispatch();
 
-  const addTodolist = (title: string) => {
+  const addTodolist = useCallback((title: string) => {
     const newId = v1();
     dispatch(addTodolistAC(newId, title));
-  };
+  }, []);
 
   const theme = createTheme({
     palette: {

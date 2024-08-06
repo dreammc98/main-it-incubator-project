@@ -1,4 +1,4 @@
-import { ChangeEvent, KeyboardEvent, useState } from "react";
+import { ChangeEvent, KeyboardEvent, memo, useState } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
@@ -6,7 +6,7 @@ type PropsType = {
   addItem: (title: string) => void;
 };
 
-export const AddItemForm = ({ addItem }: PropsType) => {
+export const AddItemForm = memo(({ addItem }: PropsType) => {
   const [taskTitle, setTaskTitle] = useState("");
 
   const [error, setError] = useState<null | string>(null);
@@ -82,4 +82,4 @@ export const AddItemForm = ({ addItem }: PropsType) => {
       {userTaskTitleLengthWarning} */}
     </>
   );
-};
+});
