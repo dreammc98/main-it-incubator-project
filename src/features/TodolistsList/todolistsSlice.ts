@@ -1,10 +1,10 @@
 import { todolistsAPI, TodolistType, updateTodolistArgs } from "api/todolists-api";
 import { appActions, RequestStatusType } from "app/app.reducer";
-import { AppThunk } from "app/store";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { clearTasksAndTodolists } from "common/actions/common.actions";
-import { createAppAsyncThank, handleServerNetworkError } from "common/utils";
+import { createAppAsyncThunk, handleServerAppError, handleServerNetworkError } from "common/utils";
 import { log } from "console";
+import { thunkTryCatch } from "common/utils/thunkTryCatch";
 
 const initialState: TodolistDomainType[] = [];
 
@@ -57,10 +57,10 @@ export const todolistsActions = slice.actions;
 
 // thunks
 
-export const changeTodolistTitle = createAppAsyncThank<any, updateTodolistArgs>(
+export const changeTodolistTitle = createAppAsyncThunk<any, updateTodolistArgs>(
   `${slice.name}/changeTodolistTitle`,
-  async (arg, thankApi) => {
-    const { dispatch, rejectWithValue } = thankApi;
+  async (arg, thunkAPI) => {
+    const { dispatch, rejectWithValue } = thunkAPI;
 
     try {
       dispatch(appActions.setAppStatus({ status: "loading" }));
@@ -76,10 +76,10 @@ export const changeTodolistTitle = createAppAsyncThank<any, updateTodolistArgs>(
   },
 );
 
-export const fetchTodolists = createAppAsyncThank<TodolistType[], {}>(
+export const fetchTodolists = createAppAsyncThunk<TodolistType[], {}>(
   `${slice.name}/fetchTodolists`,
-  async (arg, thankApi) => {
-    const { dispatch, rejectWithValue } = thankApi;
+  async (arg, thunkAPI) => {
+    const { dispatch, rejectWithValue } = thunkAPI;
 
     try {
       dispatch(appActions.setAppStatus({ status: "loading" }));
@@ -95,10 +95,10 @@ export const fetchTodolists = createAppAsyncThank<TodolistType[], {}>(
   },
 );
 
-export const removeTodolist = createAppAsyncThank<any, { id: string }>(
+export const removeTodolist = createAppAsyncThunk<any, { id: string }>(
   `${slice.name}/removeTodolist`,
-  async (arg, thankApi) => {
-    const { dispatch, rejectWithValue } = thankApi;
+  async (arg, thunkAPI) => {
+    const { dispatch, rejectWithValue } = thunkAPI;
     try {
       dispatch(appActions.setAppStatus({ status: "loading" }));
       dispatch(todolistsActions.changeTodolistEntityStatus({ id: arg.id, entityStatus: "loading" }));
@@ -113,39 +113,21 @@ export const removeTodolist = createAppAsyncThank<any, { id: string }>(
   },
 );
 
-export const addTodolist = createAppAsyncThank<any, { title: string }>(
+export const addTodolist = createAppAsyncThunk<any, { title: string }>(
   `${slice.name}/addTodolist`,
-  async (arg, thankApi) => {
-    const { dispatch, rejectWithValue } = thankApi;
-    try {
-      dispatch(appActions.setAppStatus({ status: "loading" }));
+  async (arg, thunkAPI) => {
+    const { dispatch, rejectWithValue } = thunkAPI;
+    return thunkTryCatch(thunkAPI, async () => {
       const res = await todolistsAPI.createTodolist(arg.title);
-      dispatch(appActions.setAppStatus({ status: "succeeded" }));
-      return res.data;
-    } catch (err) {
-      handleServerNetworkError(err, dispatch);
-
-      return rejectWithValue;
-    }
+      if (res.data.resultCode === 0) {
+        return res.data;
+      } else {
+        handleServerAppError(res.data, dispatch);
+        return rejectWithValue(null);
+      }
+    });
   },
 );
-
-// export const addTodolistTC = (title: string): AppThunk => {
-//   return (dispatch) => {
-//     dispatch(appActions.setAppStatus({ status: "loading" }));
-//     todolistsAPI.createTodolist(title).then((res) => {
-//       dispatch(todolistsActions.addTodolist({ todolist: res.data.data.item }));
-//       dispatch(appActions.setAppStatus({ status: "succeeded" }));
-//     });
-//   };
-// };
-// export const changeTodolistTitleTC = (id: string, title: string): AppThunk => {
-//   return (dispatch) => {
-//     todolistsAPI.updateTodolist(id, title).then((res) => {
-//       dispatch(todolistsActions.changeTodolistTitle({ id, title }));
-//     });
-//   };
-// };
 
 // types
 export type FilterValuesType = "all" | "active" | "completed";

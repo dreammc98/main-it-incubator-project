@@ -1,7 +1,7 @@
 import { instance } from "app/instance/instance";
 import axios from "axios";
 import { BaseResponse } from "common/types/BaseResponse";
-import { UpdateDomainTaskModelType } from "features/TodolistsList/tasks.reducer";
+import { UpdateDomainTaskModelType } from "features/TodolistsList/tasksSlice";
 
 // api
 export const todolistsAPI = {

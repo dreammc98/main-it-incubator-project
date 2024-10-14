@@ -1,19 +1,20 @@
+import { Dispatch } from "@reduxjs/toolkit";
 import { appActions } from "app/app.reducer";
-import { AppDispatch } from "app/store";
 import axios from "axios";
 
-export const handleServerNetworkError = (err: unknown, dispatch: AppDispatch): void => {
+/**
+ * Handles the server network error and performs the appropriate actions.
+ * @param {unknown} err - The error object
+ * @param {Dispatch} dispatch - The Redux dispatch function for sending actions
+ */
+
+export const handleServerNetworkError = (err: unknown, dispatch: Dispatch): void => {
   let errorMessage = "Some error occurred";
 
-  // ❗Проверка на наличие axios ошибки
   if (axios.isAxiosError(err)) {
-    // ⏺️ err.response?.data?.message - например получение тасок с невалидной todolistId
-    // ⏺️ err?.message - например при создании таски в offline режиме
     errorMessage = err.response?.data?.message || err?.message || errorMessage;
-    // ❗ Проверка на наличие нативной ошибки
   } else if (err instanceof Error) {
     errorMessage = `Native error: ${err.message}`;
-    // ❗Какой-то непонятный кейс
   } else {
     errorMessage = JSON.stringify(err);
   }

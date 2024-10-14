@@ -7,8 +7,8 @@ import {
   FilterValuesType,
   removeTodolist,
   todolistsActions,
-} from "features/TodolistsList/todolists.reducer";
-import { addTask, removeTask, updateTask } from "features/TodolistsList/tasks.reducer";
+} from "features/TodolistsList/todolistsSlice";
+import { addTask, removeTask, updateTask } from "features/TodolistsList/tasksSlice";
 import { TaskStatuses } from "api/todolists-api";
 import { Grid, Paper } from "@mui/material";
 import { AddItemForm } from "common/componets/AddItemForm/AddItemForm";
