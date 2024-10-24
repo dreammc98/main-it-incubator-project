@@ -1,13 +1,17 @@
-import { tasksReducer } from "features/TodolistsList/tasksSlice";
-import { combineReducers } from "redux";
-import { appReducer } from "app/app.reducer";
-import { authReducer } from "features/auth/model/auth.reducer";
-import { configureStore } from "@reduxjs/toolkit";
-import { todolistsReducer } from "features/TodolistsList/todolistsSlice";
+import { configureStore } from "@reduxjs/toolkit"
+import { appPath, appReducer } from "app/appSlice"
+import { authPath, authReducer } from "../features/auth/model/authSlice"
+import { tasksPath, tasksReducer } from "../features/todolistsList/model/tasksSlice"
+import { todolistsPath, todolistsReducer } from "../features/todolistsList/model/todolistsSlice"
 
 export const store = configureStore({
-  reducer: { tasks: tasksReducer, todolists: todolistsReducer, app: appReducer, auth: authReducer },
-});
+  reducer: {
+    [tasksPath]: tasksReducer,
+    [todolistsPath]: todolistsReducer,
+    [appPath]: appReducer,
+    [authPath]: authReducer,
+  },
+})
 
-export type AppRootStateType = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+export type AppRootStateType = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch

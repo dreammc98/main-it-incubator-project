@@ -1,43 +1,21 @@
-import React, { useCallback, useEffect } from "react";
-import "./App.css";
-import { TodolistsList } from "features/TodolistsList/TodolistsList";
-import { ErrorSnackbar } from "common/componets/ErrorSnackbar/ErrorSnackbar";
+import { useAppDispatch } from "common/hooks";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Login } from "features/auth/ui/Login";
-import { initializeApp, logout } from "features/auth/model/auth.reducer";
-import {
-  AppBar,
-  Button,
-  CircularProgress,
-  Container,
-  IconButton,
-  LinearProgress,
-  Toolbar,
-  Typography,
-} from "@mui/material";
-import { Menu } from "@mui/icons-material";
-import { useAppDispatch } from "common/hooks/useAppDispatch";
-import { selectIsLoggedIn } from "features/auth/model/auth.selectors";
-import { selectAppStatus, selectIsInitialized } from "app/app.selectors";
+import { CircularProgress, Container } from "@mui/material";
+import { ErrorSnackbar } from "common/components";
+import { authThunks } from "../features/auth/model/authSlice";
+import { selectIsInitialized } from "./appSlice";
+import { Header } from "./components/Header";
+import { Routing } from "./components/Routing";
 
-type PropsType = {
-  demo?: boolean;
-};
-
-function App({ demo = false }: PropsType) {
-  const status = useSelector(selectAppStatus);
+function App() {
   const isInitialized = useSelector(selectIsInitialized);
-  const isLoggedIn = useSelector(selectIsLoggedIn);
 
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(initializeApp());
-  }, []);
-
-  const logoutHandler = useCallback(() => {
-    dispatch(logout());
+    dispatch(authThunks.initializeApp());
   }, []);
 
   if (!isInitialized) {
@@ -52,26 +30,8 @@ function App({ demo = false }: PropsType) {
     <BrowserRouter>
       <div className="App">
         <ErrorSnackbar />
-        <AppBar position="static">
-          <Toolbar>
-            <IconButton edge="start" color="inherit" aria-label="menu">
-              <Menu />
-            </IconButton>
-            <Typography variant="h6">News</Typography>
-            {isLoggedIn && (
-              <Button color="inherit" onClick={logoutHandler}>
-                Log out
-              </Button>
-            )}
-          </Toolbar>
-          {status === "loading" && <LinearProgress />}
-        </AppBar>
-        <Container fixed>
-          <Routes>
-            <Route path={"/"} element={<TodolistsList demo={demo} />} />
-            <Route path={"/login"} element={<Login />} />
-          </Routes>
-        </Container>
+        <Header />
+        <Routing />
       </div>
     </BrowserRouter>
   );
